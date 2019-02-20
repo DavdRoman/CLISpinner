@@ -7,7 +7,8 @@ let package = Package(
     products: [
         .library(
             name: "CLISpinner",
-            targets: ["CLISpinner"]),
+            targets: ["CLISpinner"]
+		),
     ],
     dependencies: [
         .package(url: "https://github.com/onevcat/Rainbow", from: "3.1.4"),
@@ -15,9 +16,11 @@ let package = Package(
     targets: [
         .target(
             name: "CLISpinner",
-            dependencies: ["Rainbow"]),
+            dependencies: ["Rainbow"]
+		),
         .testTarget(
             name: "CLISpinnerTests",
-            dependencies: ["CLISpinner"]),
+            dependencies: ["CLISpinner"]
+		),
     ]
 )
