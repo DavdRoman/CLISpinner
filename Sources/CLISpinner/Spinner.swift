@@ -31,6 +31,7 @@ public class Spinner {
 
     var _text = ""
     var isRunning = true
+	var shouldHideCursor = true
     var frameIdx = 0
     let queue = DispatchQueue(label: "io.kilian.CLISpinner")
 
@@ -41,15 +42,16 @@ public class Spinner {
     ///   - text: Text to display, defaults to none.
     ///   - speed: Custom speed value, defaults to a recommended value for each predefined pattern.
     ///   - color: Custom spinner color, defaults to .default.
-    public init(pattern: Pattern, text: String = "", speed: Double? = nil, color: Color = .default) {
-        self.pattern = Pattern(from: pattern.symbols.map { $0.applyingColor(color) })
-        self._text = text
-        self.speed = speed ?? pattern.recommendedSpeed
-    }
+	public init(pattern: Pattern, text: String = "", speed: Double? = nil, color: Color = .default, shouldHideCursor: Bool = true) {
+		self.pattern = Pattern(from: pattern.symbols.map { $0.applyingColor(color) })
+		self._text = text
+		self.speed = speed ?? pattern.recommendedSpeed
+		self.shouldHideCursor = shouldHideCursor
+	}
 
     /// Start the spinner.
     public func start() {
-        hideCursor(true)
+        hideCursorIfNeeded(true)
         isRunning = true
         queue.async { [weak self] in
             guard let `self` = self else { return }
@@ -76,7 +78,7 @@ public class Spinner {
         }
         self.render()
         self.isRunning = false
-        hideCursor(false)
+        hideCursorIfNeeded(false)
         print(terminator: terminator)
     }
 
@@ -138,8 +140,8 @@ public class Spinner {
         fflush(stdout) // necessary for the carriage return in start()
     }
 
-    func hideCursor(_ hide: Bool) {
-        if hide {
+    func hideCursorIfNeeded(_ hide: Bool) {
+        if shouldHideCursor && hide {
             self.output("\u{001B}[?25l")
         } else {
             self.output("\u{001B}[?25h")
@@ -150,7 +152,7 @@ public class Spinner {
     ///
     /// - Note: This should most definitely be called on a SIGINT in your project.
     public func unhideCursor() {
-        self.hideCursor(false)
+        self.hideCursorIfNeeded(false)
     }
 }
 
