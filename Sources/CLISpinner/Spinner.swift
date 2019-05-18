@@ -29,7 +29,7 @@ public class Spinner {
 		}
 	}
 
-	var _text = ""
+	public var _text = ""
 	var isRunning = true
 	var shouldHideCursor = true
 	var frameIdx = 0
