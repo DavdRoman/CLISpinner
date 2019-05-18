@@ -3,45 +3,45 @@ import Rainbow
 import Dispatch
 
 public class Spinner {
-    /// The pattern the spinner uses.
-    public var pattern: Pattern {
-        didSet {
-            self.frameIdx = 0
-        }
-    }
-    /// The time to wait in seconds between each frame of the animation.
-    public var speed: Double
-    /// Text that is displayed right next to the spinner.
-    public var text: String {
-        get {
-            return self._text
-        }
-        set {
-            let (_, _, _, newText) = Rainbow.extractModes(for: newValue)
-            let (_, _, _, oldText) = Rainbow.extractModes(for: self._text)
-            let diff = oldText.count - newText.count
-            if diff > 0 {
-                self._text = newValue
-                self._text += Array(repeating: " ", count: diff)
-            } else {
-                self._text = newValue
-            }
-        }
-    }
+	/// The pattern the spinner uses.
+	public var pattern: Pattern {
+		didSet {
+			self.frameIdx = 0
+		}
+	}
+	/// The time to wait in seconds between each frame of the animation.
+	public var speed: Double
+	/// Text that is displayed right next to the spinner.
+	public var text: String {
+		get {
+			return self._text
+		}
+		set {
+			let (_, _, _, newText) = Rainbow.extractModes(for: newValue)
+			let (_, _, _, oldText) = Rainbow.extractModes(for: self._text)
+			let diff = oldText.count - newText.count
+			if diff > 0 {
+				self._text = newValue
+				self._text += Array(repeating: " ", count: diff)
+			} else {
+				self._text = newValue
+			}
+		}
+	}
 
-    var _text = ""
-    var isRunning = true
+	var _text = ""
+	var isRunning = true
 	var shouldHideCursor = true
-    var frameIdx = 0
-    let queue = DispatchQueue(label: "io.kilian.CLISpinner")
+	var frameIdx = 0
+	let queue = DispatchQueue(label: "io.kilian.CLISpinner")
 
-    /// Create a new `Spinner`.
-    ///
-    /// - Parameters:
-    ///   - pattern: The pattern to use.
-    ///   - text: Text to display, defaults to none.
-    ///   - speed: Custom speed value, defaults to a recommended value for each predefined pattern.
-    ///   - color: Custom spinner color, defaults to .default.
+	/// Create a new `Spinner`.
+	///
+	/// - Parameters:
+	///   - pattern: The pattern to use.
+	///   - text: Text to display, defaults to none.
+	///   - speed: Custom speed value, defaults to a recommended value for each predefined pattern.
+	///   - color: Custom spinner color, defaults to .default.
 	public init(pattern: Pattern, text: String = "", speed: Double? = nil, color: Color = .default, shouldHideCursor: Bool = true) {
 		self.pattern = Pattern(from: pattern.symbols.map { $0.applyingColor(color) })
 		self._text = text
@@ -49,110 +49,113 @@ public class Spinner {
 		self.shouldHideCursor = shouldHideCursor
 	}
 
-    /// Start the spinner.
-    public func start() {
-        hideCursorIfNeeded(true)
-        isRunning = true
-        queue.async { [weak self] in
-            guard let `self` = self else { return }
+	/// Start the spinner.
+	public func start() {
+		hideCursorIfNeeded(true)
+		isRunning = true
+		queue.async { [weak self] in
+			guard let `self` = self else { return }
 
-            while self.isRunning {
-                self.render()
-                self.wait(seconds: self.speed)
-            }
-        }
-    }
+			while self.isRunning {
+				self.render()
+				self.wait(seconds: self.speed)
+			}
+		}
+	}
 
-    /// Stop the spinner.
-    ///
-    /// - Parameters:
-    ///   - text: Text to display as a final value when stopping.
-    ///   - symbol: A symbol to replace the spinner with when stopping.
-    ///   - terminator: The string to print after stopping. Defaults to newline ("\n").
-    public func stop(text: String? = nil, symbol: String? = nil, terminator: String = "\n") {
-        if let text = text {
-            self.text = text
-        }
-        if let symbol = symbol {
-            self.pattern = Pattern(single: symbol.isEmpty ? " " : symbol)
-        }
-        self.render()
-        self.isRunning = false
-        hideCursorIfNeeded(false)
-        print(terminator: terminator)
-    }
+	/// Stop the spinner.
+	///
+	/// - Parameters:
+	///   - text: Text to display as a final value when stopping.
+	///   - symbol: A symbol to replace the spinner with when stopping.
+	///   - terminator: The string to print after stopping. Defaults to newline ("\n").
+	public func stop(text: String? = nil, symbol: String? = nil, terminator: String = "\n") {
+		if let text = text {
+			self.text = text
+		}
+		if let symbol = symbol {
+			self.pattern = Pattern(single: symbol.isEmpty ? " " : symbol)
+		}
+		self.render()
+		self.isRunning = false
+		hideCursorIfNeeded(false)
+		print(terminator: terminator)
+	}
 
-    /// Stop the spinner and remove it entirely.
-    public func stopAndClear() {
-        self.stop(text: "", symbol: " ", terminator: "")
-        self.output("\r")
-    }
+	/// Stop the spinner and remove it entirely.
+	public func stopAndClear() {
+		self.stop(text: "", symbol: " ", terminator: "")
+		self.output("\r")
+	}
 
-    /// Stop the spinner, change it to a green '✔' and persist the current or provided text.
-    ///
-    /// - Parameter text: Text to persist if not the one already set
-    public func succeed(text: String? = nil) {
-        self.stop(text: text, symbol: "✔".green)
-    }
+	/// Stop the spinner, change it to a green '✔' and persist the current or provided text.
+	///
+	/// - Parameter text: Text to persist if not the one already set
+	public func succeed(text: String? = nil) {
+		self.stop(text: text, symbol: "✔".green)
+	}
 
-    /// Stop the spinner, change it to a red '✖' and persist the current or provided text.
-    ///
-    /// - Parameter text: Text to persist if not the one already set
-    public func fail(text: String? = nil) {
-        self.stop(text: text, symbol: "✖".red)
-    }
+	/// Stop the spinner, change it to a red '✖' and persist the current or provided text.
+	///
+	/// - Parameter text: Text to persist if not the one already set
+	public func fail(text: String? = nil) {
+		self.stop(text: text, symbol: "✖".red)
+	}
 
-    /// Stop the spinner, change it to a yellow '⚠' and persist the current or provided text.
-    ///
-    /// - Parameter text: Text to persist if not the one already set
-    public func warn(text: String? = nil) {
-        self.stop(text: text, symbol: "⚠".yellow)
-    }
+	/// Stop the spinner, change it to a yellow '⚠' and persist the current or provided text.
+	///
+	/// - Parameter text: Text to persist if not the one already set
+	public func warn(text: String? = nil) {
+		self.stop(text: text, symbol: "⚠".yellow)
+	}
 
-    /// Stop the spinner, change it to a blue 'ℹ' and persist the current or provided text.
-    ///
-    /// - Parameter text: Text to persist if not the one already set
-    public func info(text: String? = nil) {
-        self.stop(text: text, symbol: "ℹ".blue)
-    }
+	/// Stop the spinner, change it to a blue 'ℹ' and persist the current or provided text.
+	///
+	/// - Parameter text: Text to persist if not the one already set
+	public func info(text: String? = nil) {
+		self.stop(text: text, symbol: "ℹ".blue)
+	}
 
-    func wait(seconds: Double) {
-        usleep(useconds_t(seconds * 1_000_000))
-    }
+	func wait(seconds: Double) {
+		usleep(useconds_t(seconds * 1_000_000))
+	}
 
-    func frame() -> String {
-        let frame = self.pattern.symbols[self.frameIdx]
-        self.frameIdx = (self.frameIdx + 1) % self.pattern.symbols.count
-        return "\(frame) \(self._text)"
-    }
+	func frame() -> String {
+		let frame = self.pattern.symbols[self.frameIdx]
+		self.frameIdx = (self.frameIdx + 1) % self.pattern.symbols.count
+		return "\(frame) \(self._text)"
+	}
 
-    func resetCursor() {
-        print("\r", terminator: "")
-    }
+	func resetCursor() {
+		print("\r", terminator: "")
+	}
 
-    func render() {
-        self.resetCursor()
-        self.output(self.frame())
-    }
+	func render() {
+		self.resetCursor()
+		self.output(self.frame())
+		if text.hasSuffix(" ") {
+			_text = _text.trimmingCharacters(in: .whitespaces)
+		}
+	}
 
-    func output(_ value: String) {
-        print(value, terminator: "")
-        fflush(stdout) // necessary for the carriage return in start()
-    }
+	func output(_ value: String) {
+		print(value, terminator: "")
+		fflush(stdout) // necessary for the carriage return in start()
+	}
 
-    func hideCursorIfNeeded(_ hide: Bool) {
-        if shouldHideCursor && hide {
-            self.output("\u{001B}[?25l")
-        } else {
-            self.output("\u{001B}[?25h")
-        }
-    }
+	func hideCursorIfNeeded(_ hide: Bool) {
+		if shouldHideCursor && hide {
+			self.output("\u{001B}[?25l")
+		} else {
+			self.output("\u{001B}[?25h")
+		}
+	}
 
-    /// Unhide the cursor.
-    ///
-    /// - Note: This should most definitely be called on a SIGINT in your project.
-    public func unhideCursor() {
-        self.hideCursorIfNeeded(false)
-    }
+	/// Unhide the cursor.
+	///
+	/// - Note: This should most definitely be called on a SIGINT in your project.
+	public func unhideCursor() {
+		self.hideCursorIfNeeded(false)
+	}
 }
 
